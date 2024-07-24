@@ -94,6 +94,10 @@ namespace ASiAirKiss
 
         }
 
+        /// <summary>
+        /// 显示日志
+        /// </summary>
+        /// <param name="message"></param>
         public void ShowMessage(string message)
         {
 
