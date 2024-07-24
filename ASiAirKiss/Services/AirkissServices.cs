@@ -31,8 +31,10 @@
 using ASiAirKiss.Model;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Management;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -48,6 +50,7 @@ namespace ASiAirKiss.Services
 
         private CancellationTokenSource _cancellationTokenSource;
         private Task _broadcastTask;
+        private int ListenPort = 10000;
         /// <summary>
         /// 初始化
         /// </summary>
@@ -85,11 +88,11 @@ namespace ASiAirKiss.Services
                             using (UdpClient udpClient = new UdpClient())
                             {
                                 udpClient.EnableBroadcast = true;
-                                IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, 10000);
+                                IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, ListenPort);
                                 byte[] sendBytes = Encoding.UTF8.GetBytes("Test Broadcast Message");
 
                                 udpClient.Send(sendBytes, sendBytes.Length, endPoint);
-                                return (true, $"网卡 {adapterName} 支持广播功能");
+                                return (true, $"{adapterName}");
                             }
                         }
                         catch (SocketException ex)
@@ -159,20 +162,40 @@ namespace ASiAirKiss.Services
             }
         }
 
-        /// <summary>
-        /// 循环监听
-        /// </summary>
-        /// <param name="adapterName"></param>
-        /// <param name="token"></param>
+
         private void BroadcastLoop(string adapterName, CancellationToken token)
         {
             try
             {
-                using (UdpClient udpClient = new UdpClient())
+                NetworkInterface selectedAdapter = null;
+                var adapters = NetworkInterface.GetAllNetworkInterfaces();
+                foreach (var adapter in adapters)
+                {
+                    if (adapter.Description == adapterName)
+                    {
+                        selectedAdapter = adapter;
+                        break;
+                    }
+                }
+
+                if (selectedAdapter == null)
+                {
+                    throw new Exception("未找到指定的网卡");
+                }
+
+                var properties = selectedAdapter.GetIPProperties();
+                var ipv4 = properties.UnicastAddresses
+                    .FirstOrDefault(ip => ip.Address.AddressFamily == AddressFamily.InterNetwork);
+
+                if (ipv4 == null)
+                {
+                    throw new Exception("未找到IPv4地址");
+                }
+
+                using (UdpClient udpClient = new UdpClient(new IPEndPoint(ipv4.Address, 0)))
                 {
                     udpClient.EnableBroadcast = true;
                     IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, 10000);
-
 
                     while (!token.IsCancellationRequested)
                     {
@@ -186,10 +209,11 @@ namespace ASiAirKiss.Services
                             PASSWORD = ServerInfo.PASSWORD
                         }, Formatting.Indented);
 
-                        _frm.ShowMessage($"{adapterName}\r\n{DateTime.Now}\r\nData:\r\n {data}");
 
                         byte[] sendBytes = Encoding.UTF8.GetBytes(data);
                         udpClient.Send(sendBytes, sendBytes.Length, endPoint);
+                        _frm.ShowMessage($"ListenPort:{ListenPort} \r\nBroadcast message sent.\r\n{adapterName}\r\n{DateTime.Now}\r\nData:\r\n {data}");
+
                         Task.Delay(1000).Wait();
                     }
                 }
@@ -200,5 +224,48 @@ namespace ASiAirKiss.Services
                 _frm.ShowMessage(ex.Message);
             }
         }
+
+        /// <summary>
+        /// 循环监听
+        /// </summary>
+        /// <param name="adapterName"></param>
+        /// <param name="token"></param>
+        //private void BroadcastLoop(string adapterName, CancellationToken token)
+        //{
+        //    try
+        //    {
+        //        using (UdpClient udpClient = new UdpClient())
+        //        {
+        //            udpClient.EnableBroadcast = true;
+
+        //            IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, ListenPort);
+
+
+        //            while (!token.IsCancellationRequested)
+        //            {
+        //                ServerInfo server = new ServerInfo();
+        //                string data = JsonConvert.SerializeObject(new
+        //                {
+        //                    OTA_SERVER = ServerInfo.OTA_SERVER,
+        //                    MQTT_SERVER = ServerInfo.MQTT_SERVER,
+        //                    MQTT_PORT = ServerInfo.MQTT_PORT,
+        //                    SSID_NAME = ServerInfo.SSID_NAME,
+        //                    PASSWORD = ServerInfo.PASSWORD
+        //                }, Formatting.Indented);
+
+        //                _frm.ShowMessage($"ListenPort:{ListenPort} \r\n{adapterName}\r\n{DateTime.Now}\r\nData:\r\n {data}");
+
+        //                byte[] sendBytes = Encoding.UTF8.GetBytes(data);
+        //                udpClient.Send(sendBytes, sendBytes.Length, endPoint);
+        //                Task.Delay(1000).Wait();
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // 处理异常
+        //        _frm.ShowMessage(ex.Message);
+        //    }
+        //}
     }
 }

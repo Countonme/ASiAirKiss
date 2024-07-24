@@ -58,7 +58,7 @@ namespace ASiAirKiss
             else
             {
                 ShowStop();
-
+                ShowMessage(flag.message);
 
             }
 
