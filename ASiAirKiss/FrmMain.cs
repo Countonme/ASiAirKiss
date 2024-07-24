@@ -21,6 +21,12 @@ namespace ASiAirKiss
             this.btnStart.Click += BtnStart_Click;
             this.btnStop.Click += BtnStop_Click;
             this.Text += $"_Version:{Application.ProductVersion}";
+            this.FormClosing += FrmMain_FormClosing;
+        }
+
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         /// <summary>
