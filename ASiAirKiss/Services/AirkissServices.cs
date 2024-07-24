@@ -51,9 +51,15 @@ namespace ASiAirKiss.Services
         /// <summary>
         /// 初始化
         /// </summary>
-        public AirkissServices()
+        /// 
+        private readonly FrmMain _frm;
+        /// <summary>
+        /// AirkissServices
+        /// </summary>
+        /// <param name="frm"></param>
+        public AirkissServices(FrmMain frm)
         {
-
+            _frm = frm;
 
 
         }
@@ -136,10 +142,10 @@ namespace ASiAirKiss.Services
         /// <summary>
         /// 开启广播
         /// </summary>
-        public void StartBroadcasting()
+        public void StartBroadcasting(string adapterName)
         {
             _cancellationTokenSource = new CancellationTokenSource();
-            _broadcastTask = Task.Run(() => BroadcastLoop(_cancellationTokenSource.Token));
+            _broadcastTask = Task.Run(() => BroadcastLoop(adapterName, _cancellationTokenSource.Token));
         }
 
         /// <summary>
@@ -153,12 +159,12 @@ namespace ASiAirKiss.Services
             }
         }
 
-
         /// <summary>
         /// 循环监听
         /// </summary>
+        /// <param name="adapterName"></param>
         /// <param name="token"></param>
-        private void BroadcastLoop(CancellationToken token)
+        private void BroadcastLoop(string adapterName, CancellationToken token)
         {
             try
             {
@@ -180,6 +186,8 @@ namespace ASiAirKiss.Services
                             PASSWORD = ServerInfo.PASSWORD
                         }, Formatting.Indented);
 
+                        _frm.ShowMessage($"{adapterName}\r\n{DateTime.Now}\r\nData:\r\n {data}");
+
                         byte[] sendBytes = Encoding.UTF8.GetBytes(data);
                         udpClient.Send(sendBytes, sendBytes.Length, endPoint);
                         Task.Delay(1000).Wait();
@@ -189,6 +197,7 @@ namespace ASiAirKiss.Services
             catch (Exception ex)
             {
                 // 处理异常
+                _frm.ShowMessage(ex.Message);
             }
         }
     }

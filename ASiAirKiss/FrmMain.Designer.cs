@@ -45,6 +45,8 @@
             this.txtSSID = new Sunny.UI.UITextBox();
             this.uiLinkLabel6 = new Sunny.UI.UILinkLabel();
             this.txtOTAServer = new Sunny.UI.UIIPTextBox();
+            this.RadioSaveLogs = new Sunny.UI.UIRadioButton();
+            this.RadioNoSaveLogs = new Sunny.UI.UIRadioButton();
             this.uiTitlePanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -155,7 +157,7 @@
             this.btnStop.FillPressColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(148)))), ((int)(((byte)(0)))));
             this.btnStop.FillSelectedColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(148)))), ((int)(((byte)(0)))));
             this.btnStop.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btnStop.Location = new System.Drawing.Point(110, 99);
+            this.btnStop.Location = new System.Drawing.Point(120, 99);
             this.btnStop.MinimumSize = new System.Drawing.Size(1, 1);
             this.btnStop.Name = "btnStop";
             this.btnStop.RectColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(184)))), ((int)(((byte)(0)))));
@@ -305,10 +307,35 @@
             this.txtOTAServer.TextAlignment = System.Drawing.ContentAlignment.MiddleCenter;
             this.txtOTAServer.Value = ((System.Net.IPAddress)(resources.GetObject("txtOTAServer.Value")));
             // 
+            // RadioSaveLogs
+            // 
+            this.RadioSaveLogs.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.RadioSaveLogs.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.RadioSaveLogs.Location = new System.Drawing.Point(3, 73);
+            this.RadioSaveLogs.MinimumSize = new System.Drawing.Size(1, 1);
+            this.RadioSaveLogs.Name = "RadioSaveLogs";
+            this.RadioSaveLogs.Size = new System.Drawing.Size(102, 29);
+            this.RadioSaveLogs.TabIndex = 15;
+            this.RadioSaveLogs.Text = "保存日志";
+            // 
+            // RadioNoSaveLogs
+            // 
+            this.RadioNoSaveLogs.Checked = true;
+            this.RadioNoSaveLogs.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.RadioNoSaveLogs.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.RadioNoSaveLogs.Location = new System.Drawing.Point(111, 73);
+            this.RadioNoSaveLogs.MinimumSize = new System.Drawing.Size(1, 1);
+            this.RadioNoSaveLogs.Name = "RadioNoSaveLogs";
+            this.RadioNoSaveLogs.Size = new System.Drawing.Size(109, 29);
+            this.RadioNoSaveLogs.TabIndex = 16;
+            this.RadioNoSaveLogs.Text = "不保存日志";
+            // 
             // FrmMain
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(1023, 589);
+            this.Controls.Add(this.RadioNoSaveLogs);
+            this.Controls.Add(this.RadioSaveLogs);
             this.Controls.Add(this.uiLinkLabel6);
             this.Controls.Add(this.txtOTAServer);
             this.Controls.Add(this.txtSSID);
@@ -341,7 +368,6 @@
         private Sunny.UI.UILight ledStatus;
         private Sunny.UI.UILinkLabel txtStatus;
         private Sunny.UI.UIButton btnStop;
-        private Sunny.UI.UIRichTextBox uiRichTextBox1;
         private Sunny.UI.UILinkLabel uiLinkLabel2;
         private Sunny.UI.UILinkLabel uiLinkLabel3;
         private Sunny.UI.UITextBox txtMqttPort;
@@ -351,6 +377,9 @@
         private Sunny.UI.UITextBox txtSSID;
         private Sunny.UI.UILinkLabel uiLinkLabel6;
         private Sunny.UI.UIIPTextBox txtOTAServer;
+        public Sunny.UI.UIRichTextBox uiRichTextBox1;
+        private Sunny.UI.UIRadioButton RadioSaveLogs;
+        private Sunny.UI.UIRadioButton RadioNoSaveLogs;
     }
 }
 
