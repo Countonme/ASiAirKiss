@@ -28,28 +28,40 @@
  *----------------------------------------------------------------*/
 
 #endregion << 版 本 注 释 >>
+using ASiAirKiss.Model;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace ASiAirKiss.Services
 {
     public class AirkissServices
     {
+        /// <summary>
+        /// 多线程 
+        /// </summary>
 
-        public AirkissServices() 
+        private CancellationTokenSource _cancellationTokenSource;
+        private Task _broadcastTask;
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public AirkissServices()
         {
-        
-        
-        
+
+
+
         }
 
+        /// <summary>
+        /// 检查网卡是否支持广播
+        /// </summary>
+        /// <returns></returns>
         public (bool flag, string message) CheckBroadcastSupport()
         {
             try
@@ -89,7 +101,11 @@ namespace ASiAirKiss.Services
             return (false, "未找到支持广播功能的无线网卡");
         }
 
-
+        /// <summary>
+        /// 获取网卡地址
+        /// </summary>
+        /// <param name="adapterName"></param>
+        /// <returns></returns>
         private string GetWirelessAdapterIPAddress(string adapterName)
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -115,6 +131,65 @@ namespace ASiAirKiss.Services
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// 开启广播
+        /// </summary>
+        public void StartBroadcasting()
+        {
+            _cancellationTokenSource = new CancellationTokenSource();
+            _broadcastTask = Task.Run(() => BroadcastLoop(_cancellationTokenSource.Token));
+        }
+
+        /// <summary>
+        /// 停止广播
+        /// </summary>
+        public void StopBroadcasting()
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+            }
+        }
+
+
+        /// <summary>
+        /// 循环监听
+        /// </summary>
+        /// <param name="token"></param>
+        private void BroadcastLoop(CancellationToken token)
+        {
+            try
+            {
+                using (UdpClient udpClient = new UdpClient())
+                {
+                    udpClient.EnableBroadcast = true;
+                    IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, 10000);
+
+
+                    while (!token.IsCancellationRequested)
+                    {
+                        ServerInfo server = new ServerInfo();
+                        string data = JsonConvert.SerializeObject(new
+                        {
+                            OTA_SERVER = ServerInfo.OTA_SERVER,
+                            MQTT_SERVER = ServerInfo.MQTT_SERVER,
+                            MQTT_PORT = ServerInfo.MQTT_PORT,
+                            SSID_NAME = ServerInfo.SSID_NAME,
+                            PASSWORD = ServerInfo.PASSWORD
+                        }, Formatting.Indented);
+
+                        byte[] sendBytes = Encoding.UTF8.GetBytes(data);
+                        udpClient.Send(sendBytes, sendBytes.Length, endPoint);
+                        Task.Delay(1000).Wait();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // 处理异常
+            }
         }
     }
 }
